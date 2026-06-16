@@ -26,7 +26,7 @@ from pathlib import Path
 
 # Import the shared model client (one folder up, in shared/).
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from llm import chat, MODEL  # noqa: E402
+from shared.llm import chat, MODEL  # noqa: E402
 
 # --- config -----------------------------------------------------------------
 

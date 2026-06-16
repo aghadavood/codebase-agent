@@ -1,21 +1,17 @@
 """
 shared/llm.py  —  one place that talks to the model.
 
-Every layer imports `chat()` from here. The whole project uses Gemma 4 through
-Google AI Studio's OpenAI-compatible endpoint, which means we use the standard
-`openai` library and just point it at Google's URL. Swapping models later
+Every layer imports `chat()` from here. The whole project uses Nvidia model through
+NVIDIA's OpenAI-compatible endpoint, which means we use the standard
+`openai` library and just point it at NVIDIA's URL. Swapping models later
 (or providers) is a one-line change in this file — nothing else has to change.
 
 Setup:
     pip install openai
-    # get a free key at https://aistudio.google.com  ("Get API key")
     # PowerShell:
-    $env:GEMINI_API_KEY=""
+    $env:NVIDIA_API_KEY=""
 
-Why Gemma 4: it's open, free on the AI Studio tier, and good enough for the
-whole learning journey. Note the free tier has low rate limits — fine for a few
-calls per session, but if you ever hit "rate limit" errors, either wait a bit
-or switch MODEL below to a paid Gemini model (e.g. "gemini-3.5-flash").
+
 """
 
 import os
@@ -24,22 +20,24 @@ from openai import OpenAI
 
 # --- the one place to change models -----------------------------------------
 
-# Gemma 4 options on the Gemini API:
-#   "gemma-4-31b-it"      -> dense, highest quality (default)
-#   "gemma-4-26b-a4b-it"  -> MoE, faster, slightly lower quality
-# To upgrade to a paid Google model later, just change this string, e.g.
-#   "gemini-3.5-flash"
-MODEL = "gemma-4-31b-it"
+#qwen3.5-122b-a10b — the top-left one.
+#Why it's the right choice for your project:
 
-BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
+#Its description literally says 122B MoE for coding, reasoning, multimodal chat, agent-ready — coding and agent-ready is exactly your use case.
+#It has the "tool calling" tag. That matters a lot for the later layers (3–4) where your agent needs to call tools reliably. Picking a tool-calling model now means you won't have to switch again mid-project.
+#The "10B active" part (MoE) means it's efficient — fast and cheap to run despite being large.
+
+MODEL = "qwen/qwen3.5-122b-a10b"
+
+BASE_URL = "https://integrate.api.nvidia.com/v1"
 
 
 def _client() -> OpenAI:
-    key = os.environ.get("GEMINI_API_KEY")
+    key = os.environ.get("NVIDIA_API_KEY")
     if not key:
         raise RuntimeError(
-            "Set GEMINI_API_KEY first. Get a free key at https://aistudio.google.com\n"
-            '  PowerShell:  $env:GEMINI_API_KEY="your-key-here"'
+            "Set NVIDIA_API_KEY first. Get a free key at https://developer.nvidia.com/nvidia-ai-studio\n"
+            '  PowerShell:  $env:NVIDIA_API_KEY="your-key-here"'
         )
     # The OpenAI library, pointed at Google's endpoint. That's the whole trick.
     return OpenAI(api_key=key, base_url=BASE_URL)
