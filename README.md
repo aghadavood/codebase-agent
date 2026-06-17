@@ -1,12 +1,11 @@
 # Building a Codebase Agent — Layer-by-Layer Learning Journey
 
-> One repo. One evolving system. Each layer is a weekend project that **builds on the last one's output**.
-> The whole point: build it, watch it fail, document *why*, then fix it. The failures are the portfolio.
+
 
 **Stack:** Python core, TypeScript only for any UI.
 **Through-line:** A "codebase agent" — point it at a Git repo, it answers questions about the code, then learns to *act* on it (fix issues, open PRs). By the end you've built a tiny open version of what Cursor does.
 
-**Why this domain:** developer tooling is the hottest paid niche in applied AI, you already have intuition for it, and "I built a mini coding agent and documented every failure" is a strong repo headline. The three skills employers actually pay for — retrieval on messy real data, reliable tool/ACI design, and evals/observability — all get exercised here.
+**Why this domain:** developer tooling is the hottest paid niche in applied AI. The three skills employers actually pay for — retrieval on messy real data, reliable tool/ACI design, and evals/observability — all get exercised here.
 
 ---
 
@@ -43,7 +42,7 @@ Build a script that stuffs an entire small repo's source into one LLM prompt and
 ---
 
 ## Layer 1 — Retrieval (RAG)
-**Project: `repo-qa` — chat with the codebase**
+**Project: `qa` — chat with the codebase**
 
 Replace "stuff everything" with "retrieve only the relevant chunks." This is the single most in-demand applied-AI skill, so spend real time here.
 
@@ -61,7 +60,7 @@ Replace "stuff everything" with "retrieve only the relevant chunks." This is the
 ---
 
 ## Layer 2 — The augmented LLM & workflows (NOT agents yet)
-**Project: `repo-pipeline` — a fixed multi-step workflow**
+**Project: `pipeline` — a fixed multi-step workflow**
 
 Before any autonomy, build a *predefined code path*. Anthropic's core lesson: the most successful implementations use simple composable patterns, not frameworks; start with LLM APIs directly and only add complexity when it demonstrably helps.
 
@@ -79,7 +78,7 @@ Before any autonomy, build a *predefined code path*. Anthropic's core lesson: th
 ---
 
 ## Layer 3 — The agent loop
-**Project: `repo-agent` — let it decide**
+**Project: `agent` — let it decide**
 
 Now make it an agent: an LLM using tools in a loop based on environmental feedback. Give it the Layer 1 retriever and a file-reader as tools, and let *it* decide what to call.
 
@@ -92,7 +91,7 @@ Now make it an agent: an LLM using tools in a loop based on environmental feedba
 ---
 
 ## Layer 4 — Tools & the agent-computer interface (ACI)
-**Project: `repo-agent-v2` — make the tools bulletproof**
+**Project: `agent-v2` — make the tools bulletproof**
 
 The highest-leverage layer and the one most tutorials skip. Anthropic spent *more* time optimizing tools than prompts on SWE-bench. Treat tool design as seriously as UI design.
 
@@ -109,7 +108,7 @@ The highest-leverage layer and the one most tutorials skip. Anthropic spent *mor
 ---
 
 ## Layer 5 — MCP
-**Project: `repo-mcp-server` — standardize the tools**
+**Project: `mcp-server` — standardize the tools**
 
 Wrap your tools in the Model Context Protocol so any MCP client (including Cursor itself) can use them. This is where your project becomes interoperable — and demoable.
 
@@ -123,7 +122,7 @@ Wrap your tools in the Model Context Protocol so any MCP client (including Curso
 ---
 
 ## Layer 6 — Memory
-**Project: `repo-agent-memory` — make it remember**
+**Project: `agent-memory` — make it remember**
 
 Give the agent persistent memory across sessions so it recalls past questions, decisions, and the repo's quirks.
 
@@ -136,7 +135,7 @@ Give the agent persistent memory across sessions so it recalls past questions, d
 ---
 
 ## Layer 7 — Evals & observability
-**Project: `repo-agent-evals` — prove it works**
+**Project: `agent-evals` — prove it works**
 
 Woven through every layer in spirit, but now make it formal. Almost nobody self-taught has this, so it's your strongest hiring signal.
 

@@ -61,4 +61,8 @@ there to swap it for any other model later.
 Layer 0: naive whole-repo-in-one-prompt agent (works small, breaks real)
 ```
 
-Don't squash this away later — the dumb version is part of the story.
+##change the model, Gemma was too little so i changed to 
+
+MODEL = "qwen/qwen3.5-122b-a10b" from nvidia.
+
+now it works very better.
