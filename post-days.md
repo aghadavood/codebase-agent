@@ -1,4 +1,4 @@
-Day 1 of building a codebase agent from scratch.
+##Day 1 of building a codebase agent from scratch.
 
 Built the dumbest possible version: read the whole project, stuff every file into one prompt, ask the AI about it.
 
@@ -7,3 +7,6 @@ Worked on a tiny folder. On a real project it collected 311,000 tokens — the f
 That's exactly why retrieval exists: send only what's relevant, not everything.
 
 Next: Layer 1, RAG.
+
+##Day 2 of building a codebase agent from scratch.
+
