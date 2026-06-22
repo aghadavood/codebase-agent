@@ -39,7 +39,6 @@ def _client() -> OpenAI:
             "Set NVIDIA_API_KEY first. Get a free key at https://developer.nvidia.com/nvidia-ai-studio\n"
             '  PowerShell:  $env:NVIDIA_API_KEY="your-key-here"'
         )
-    # The OpenAI library, pointed at Google's endpoint. That's the whole trick.
     return OpenAI(api_key=key, base_url=BASE_URL)
 
 
