@@ -1,7 +1,7 @@
 """
 shared/embeddings.py  —  one place that talks to the embeddings model.
 
-Every layer imports `embed()` from here. The Nvidia embeddings model through
+Every layer imports `embed()` / `embed_batch()` from here. The Nvidia embeddings model through
 NVIDIA's OpenAI-compatible endpoint, which means we use the standard
 `openai` library and just point it at NVIDIA's URL.
 """
@@ -13,6 +13,7 @@ from openai import OpenAI
 EMBED_MODEL = "nvidia/nv-embedqa-e5-v5"
 
 BASE_URL = "https://integrate.api.nvidia.com/v1"
+BATCH_SIZE = 50
 
 def _client() -> OpenAI:
     key = os.environ.get("NVIDIA_API_KEY")
@@ -35,6 +36,23 @@ def embed(text: str, mode: str) -> list[float]:
         extra_body={"input_type": mode},
     )
     return resp.data[0].embedding
+
+
+def embed_batch(texts: list[str], mode: str) -> list[list[float]]:
+    """Embed many strings in batches of ≤50. mode must be 'passage' or 'query'."""
+    if mode not in ("passage", "query"):
+        raise ValueError('mode must be "passage" or "query"')
+
+    result: list[list[float]] = []
+    for i in range(0, len(texts), BATCH_SIZE):
+        batch = texts[i : i + BATCH_SIZE]
+        resp = _client().embeddings.create(
+            model=EMBED_MODEL,
+            input=batch,
+            extra_body={"input_type": mode, "truncate": "END"},
+        )
+        result.extend(d.embedding for d in resp.data)
+    return result
 
 
 if __name__ == "__main__":

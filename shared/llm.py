@@ -27,8 +27,8 @@ from openai import OpenAI
 #It has the "tool calling" tag. That matters a lot for the later layers (3–4) where your agent needs to call tools reliably. Picking a tool-calling model now means you won't have to switch again mid-project.
 #The "10B active" part (MoE) means it's efficient — fast and cheap to run despite being large.
 
-MODEL = "qwen/qwen3.5-122b-a10b"
-
+#MODEL = "qwen/qwen3.5-122b-a10b"
+MODEL = "meta/llama-3.1-8b-instruct"
 BASE_URL = "https://integrate.api.nvidia.com/v1"
 
 
