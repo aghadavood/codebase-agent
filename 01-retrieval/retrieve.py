@@ -25,6 +25,12 @@ def cosine(a: list[float], b: list[float]) -> float:
     return dot / (norm_a * norm_b)
 
 
+def semantic_score_all(query: str, store: list[dict]) -> list[float]:
+    """Score every chunk by cosine similarity; return floats in store order."""
+    qvec = embed(query, "query")
+    return [cosine(qvec, item["vector"]) for item in store]
+
+
 def search(query: str, store: list[dict], k: int) -> list[tuple[float, str]]:
     """Embed query as query, return top-k (score, text) pairs by cosine similarity."""
     qvec = embed(query, "query")

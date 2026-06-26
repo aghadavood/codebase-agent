@@ -96,3 +96,19 @@ The big latency mystery (the important one). My answers were taking 2 to 12 MINU
 Where I landed: A complete, working pipeline I built and understand line by line — cut the code, turn it into numbers, store it, search by meaning, hand the best pieces to a fast model for a grounded answer.
 Next: Make the search sharper — combine meaning-based search with exact keyword matching, then add a reranking step to push the best results to the top.
 
+### why ia have to change the model from  MODEL = "qwen/qwen3.5-122b-a10b" to 
+MODEL = "meta/llama-3.1-8b-instruct"?
+
+A bigger model is smarter and more precise . But it's also slower and, on the free tier, it gets stuck waiting in a long queue. That's why "hello" took 214 seconds.
+
+Here's the key point: this task doesn't need that much brainpower. The hard part — finding the right code — is already done by my search. All the model has to do now is write a short summary of code it's been handed.  A small model does it perfectly well, in under a second.
+
+So im not giving up quality where it matters. im  just not paying a 200-second wait for genius-level intelligence on a task that only needs "good enough."
+
+The rule: match the model size to how hard the job is. Big model for hard thinking, small model for easy writing. Summarizing is easy, so small wins.
+(Keep the big model noted — you'll want it later for the agent layers, where the model has to make real decisions. That's a hard job. This one isn't.)
+
+Next: Make the search sharper — combine meaning-based search with exact keyword matching, then add a reranking step to push the best results to the top.
+
+
+
