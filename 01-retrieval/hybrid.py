@@ -1,3 +1,17 @@
+"""
+Hybrid search built and tested in 01-retrieval/hybrid.py. 
+
+Working: tokenize, BM25Index, bm25_score_all, min_max, hybrid_search(alpha).
+Semantic twin semantic_score_all added to retrieve.py. 
+Merge = min-max both → blend alpha*sem + (1-alpha)*bm25 → sort → top-k. 
+Aligned by store-order index via zip (the no-sort/no-truncate _score_all 
+design is what guarantees correct alignment — silent-wrong trap if violated).
+
+"""
+
+
+
+
 import math
 import re
 import sys
@@ -6,6 +20,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from retrieve import semantic_score_all  # noqa: E402
+from shared.rerank import rerank  # noqa: E402
 
 K1 = 1.5
 B = 0.75
@@ -114,25 +129,41 @@ def hybrid_search(
     return scored[:k]
 
 
+def rerank_pipeline(
+    query: str,
+    store: list[dict],
+    bm25_index: BM25Index,
+    k_wide: int = 10,
+    k_final: int = 3,
+) -> list[tuple[float, str]]:
+    """Two-stage retrieval: hybrid casts a wide net, reranker picks the final order.
+
+    1. hybrid_search → top k_wide candidates (the shortlist)
+    2. pull the texts out into a list[str]
+    3. rerank(query, texts) → a relevance score per text, in input order
+    4. re-pair scores with texts, sort by the NEW score, return top k_final
+    """
+    candidates = hybrid_search(query, store, bm25_index, k=k_wide)
+    texts = [text for _, text in candidates]
+    scores = rerank(query, texts)
+    scored = list(zip(scores, texts))
+    scored.sort(key=lambda pair: pair[0], reverse=True)
+    return scored[:k_final]
+
+
 if __name__ == "__main__":
+    import sys
+    from pathlib import Path
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from chunk_by_ast import chunk_by_ast
     from retrieve import build_store
 
-    target = Path(__file__).resolve().parent / "retrieve.py"
-    with open(target, encoding="utf-8") as f:
+    with open("retrieve.py", encoding="utf-8") as f:
         chunks = chunk_by_ast(f.read())
-
     store = build_store(chunks)
     bm25_index = build_bm25([item["text"] for item in store])
 
-    queries = (
-        "build_index",
-        "create the faiss search structure",
-    )
-    for query in queries:
-        print(f"\n=== query: {query!r} ===")
-        for alpha in (1.0, 0.0, 0.5):
-            print(f"\n--- alpha={alpha} ---")
-            for score, text in hybrid_search(query, store, bm25_index, k=3, alpha=alpha):
-                print(f"{score:.3f}  {text.strip().splitlines()[0][:60]}")
+    query = "create the faiss search structure"
+    print(f"Q: {query}\n")
+    for score, text in rerank_pipeline(query, store, bm25_index):
+        print(f"{score:+.3f}  {text.splitlines()[0][:60]}")
