@@ -172,3 +172,47 @@ Expensive, precise rerank (cross-encoder) → re-judge only those 10-20, re-sort
 
 Hybrid casts the net; reranker picks the keeper. They're partners, not rivals. 
 
+### rearanker
+
+A reranker takes (query, [chunk1, chunk2, ...]) and returns a relevance score per chunk. just scores, one per candidate.
+
+Where the client lives: in shared/ — same home as llm.py (chat) and embeddings.py. Reranking is a third model type, so it belongs beside the other two. New file: shared/rerank.py. ✅
+What it takes / returns: input is (query, chunks), output is a relevance score per chunk — no text, no vectors, just scores. ✅
+Where it slots in the pipeline: after hybrid_search, and it takes hybrid's top-k output as its input. ✅
+
+point : rerank happens after hybrid serach , in hybrid search we have 1 items retrieved now they should be rerank. like the following:
+
+query → hybrid_search(k=10)  →  rerank(query, those 10)  →  re-sorted top-3 → answer()
+
+hybrid_search returns (score, text) pairs, but rerank only needs the text (it computes its own scores from scratch — it ignores hybrid's scores entirely).
+Hybrid's job was just to pick which chunks reach the reranker; once they're picked, its scores are thrown away. The reranker re-scores from zero. Makes sense? Hybrid decides who gets in the room; rerank decides the final ranking inside the room.
+
+Not every model on build.nvidia.com is hosted. Some are "Deploy"-only (docker run --gpus all, self-host on your own GPU). The newest text reranker (llama-nemotron-rerank-1b-v2) is download-only — no hosted REST endpoint. Hosted ≠ available-as-API. Check for an invoke_url snippet, not just a model card.
+
+i have to find another reranker in nvidia or making reranker with chat model( A reranker is "score query-vs-chunk relevance" — you can ask an LLM to do that: prompt it with the query + each chunk, ask for a 0–10 relevance score, sort by that. It's slower and less precise than a purpose-built cross-encoder, but it's the same idea, runs on infrastructure you have, and teaches you what a reranker does by building one. Then later, swap in a real cross-encoder when you have access. This is the "LLM-as-reranker" pattern and it's legitimately used in production.)
+
+a persisisting error ahhhhh:
+404 = "nothing here, maybe wrong URL." 
+410 = "was here, permanently retired."
+A 410 means stop retrying that URL — it's not coming back. The deprecated reranker's hosted endpoint is fully decommissioned.
+
+## 27.06.2026
+
+### Reranker 
+(nv-rerank-qa-mistral-4b) ranks build_index #1 on "create the faiss search structure" — the exact query where semantic, BM25, AND hybrid all failed. 
+Cross-encoder reads query+chunk together, sees build_index CONSTRUCTS the faiss index. 
+Scores: +0.6 vs −9.6, a decisive gap vs Layer 1's weak 0.38/0.34 margins. Reranking > hybrid blend, empirically, on the case that motivated the layer. 
+
+Hosted model: nv-rerank-qa-mistral-4b:1 at ai.api.nvidia.com/v1/retrieval/nvidia/reranking (free, no GPU). Path to here: new text rerankers are download-only, old llama-3.2 reranker 410 Gone, mistral-4b still hosted.
+
+shared/rerank.py is done and working. ✅
+
+### Layer 2 COMPLETE — hybrid + rerank, two-stage pipeline working.
+
+Full pipeline (chunk → embed → hybrid k=10 → rerank → top-3) ranks build_index #1 on "create the faiss search structure": +1.27 vs −3.56 vs −5.40. The exact query where semantic (#1 search_index), BM25 (#1 answer), AND hybrid blend (build_index→#3) all failed. Cross-encoder wins because it judges query+chunk jointly.
+
+Hard-won plumbing lesson: NVIDIA's new text rerankers are download-only (docker/GPU); old llama-3.2 reranker is 410 Gone; nv-rerank-qa-mistral-4b:1 is still hosted & free at ai.api.nvidia.com/v1/retrieval/nvidia/reranking (model in BODY, not URL path). "Hosted on the catalog" ≠ "callable API" — check for an invoke_url, not just a model card.
+
+Wide-then-narrow rationale: hybrid is imperfect (it buried build_index), so cast a wide net (recall) then let the precise judge promote (precision). Reranking only re-orders what it's given — never truncate before reranking.
+
+
