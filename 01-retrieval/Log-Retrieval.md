@@ -196,6 +196,8 @@ a persisisting error ahhhhh:
 410 = "was here, permanently retired."
 A 410 means stop retrying that URL — it's not coming back. The deprecated reranker's hosted endpoint is fully decommissioned.
 
+(why nvidia : free + no card (critical for me), one key for all model types, and OpenAI-compatible so the skills transfer. The access reason is real and it's the one that makes this project possible for you at all)
+
 ## 27.06.2026
 
 ### Reranker 
@@ -207,7 +209,7 @@ Hosted model: nv-rerank-qa-mistral-4b:1 at ai.api.nvidia.com/v1/retrieval/nvidia
 
 shared/rerank.py is done and working. ✅
 
-### Layer 2 COMPLETE — hybrid + rerank, two-stage pipeline working.
+### Layer 1 COMPLETE — hybrid + rerank, two-stage pipeline working.
 
 Full pipeline (chunk → embed → hybrid k=10 → rerank → top-3) ranks build_index #1 on "create the faiss search structure": +1.27 vs −3.56 vs −5.40. The exact query where semantic (#1 search_index), BM25 (#1 answer), AND hybrid blend (build_index→#3) all failed. Cross-encoder wins because it judges query+chunk jointly.
 
